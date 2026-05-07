@@ -1,0 +1,17 @@
+{
+  "name": "projeto5",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sync football tips from RapidAPI into Supabase.",
+  "scripts": {
+    "sync:tips": "node src/jobs/sync-tips.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.3",
+    "dotenv": "^16.6.1",
+    "ws": "^8.20.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
