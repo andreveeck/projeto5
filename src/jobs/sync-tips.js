@@ -141,10 +141,13 @@ async function fetchPredictions(url) {
 
 async function main() {
   const requestedAt = new Date().toISOString();
-  const endpoint = buildRequestUrl();
-  const supabase = createSupabase();
+  let endpoint = API_URL;
+  let supabase = null;
 
   try {
+    endpoint = buildRequestUrl();
+    supabase = createSupabase();
+
     const { body, httpStatus } = await fetchPredictions(endpoint);
     const rows = body.data.map(mapPredictionToTip);
 
@@ -164,14 +167,21 @@ async function main() {
       `Sync finished successfully. Upserted ${rows.length} tip(s) from ${endpoint}.`
     );
   } catch (error) {
-    await insertSyncLog(supabase, {
-      endpoint,
-      requested_at: requestedAt,
-      http_status: error.httpStatus || null,
-      records_count: 0,
-      error_message: error.message,
-      raw_response: error.rawResponse || null
-    });
+    if (supabase) {
+      await insertSyncLog(supabase, {
+        endpoint,
+        requested_at: requestedAt,
+        http_status: error.httpStatus || null,
+        records_count: 0,
+        error_message: error.message,
+        raw_response: error.rawResponse || null
+      });
+    } else {
+      console.error(
+        "Sync log skipped because Supabase client was not initialized:",
+        error.message
+      );
+    }
 
     console.error("Sync failed:", error.message);
     process.exitCode = 1;
