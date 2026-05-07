@@ -5,6 +5,7 @@ const { createClient } = require("@supabase/supabase-js");
 
 const API_URL = "https://football-prediction-api.p.rapidapi.com/api/v2/predictions";
 const UPSERT_BATCH_SIZE = 100;
+const FETCH_TIMEOUT_MS = 30000;
 
 function requireEnv(name) {
   const value = process.env[name];
@@ -100,14 +101,31 @@ async function upsertTips(supabase, rows) {
 }
 
 async function fetchPredictions(url) {
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-key": requireEnv("RAPIDAPI_KEY"),
-      "x-rapidapi-host": process.env.RAPIDAPI_HOST || "football-prediction-api.p.rapidapi.com",
-      "Content-Type": "application/json"
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let response;
+
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        "x-rapidapi-key": requireEnv("RAPIDAPI_KEY"),
+        "x-rapidapi-host": process.env.RAPIDAPI_HOST || "football-prediction-api.p.rapidapi.com",
+        "Content-Type": "application/json"
+      }
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(
+        `RapidAPI request timed out after ${FETCH_TIMEOUT_MS / 1000} seconds`
+      );
     }
-  });
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const responseText = await response.text();
   let parsedBody = null;
