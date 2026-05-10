@@ -4,7 +4,8 @@
   "private": true,
   "description": "Sync football tips from RapidAPI into Supabase.",
   "scripts": {
-    "sync:tips": "node src/jobs/sync-tips.js"
+    "sync:tips": "node src/jobs/sync-tips.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

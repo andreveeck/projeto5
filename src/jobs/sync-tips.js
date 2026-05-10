@@ -206,4 +206,20 @@ async function main() {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  API_URL,
+  UPSERT_BATCH_SIZE,
+  FETCH_TIMEOUT_MS,
+  requireEnv,
+  buildRequestUrl,
+  createSupabase,
+  mapPredictionToTip,
+  insertSyncLog,
+  upsertTips,
+  fetchPredictions,
+  main
+};
